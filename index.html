@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Username List Checker</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #090b11;
+      color: #eff2fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --surface: rgba(20, 24, 36, 0.88);
+      --border: rgba(161, 174, 205, 0.14);
+      --muted: #9ba6bd;
+      --accent: #a78bfa;
+      --accent-strong: #8b5cf6;
+      --cyan: #67e8f9;
+      --pink: #f0abfc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      isolation: isolate;
+      margin: 0;
+      min-height: 100vh;
+      padding: 44px 22px 72px;
+      background:
+        radial-gradient(ellipse at 48% -18%, rgba(120, 86, 221, 0.3), transparent 58%),
+        radial-gradient(ellipse at 100% 48%, rgba(18, 166, 188, 0.1), transparent 35%),
+        #090b11;
+    }
+
+    body::before {
+      position: fixed;
+      z-index: -1;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(177, 190, 225, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(177, 190, 225, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      content: "";
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+      pointer-events: none;
+    }
+
+    body::after {
+      position: fixed;
+      z-index: -1;
+      top: 25%;
+      left: -180px;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: rgba(80, 74, 220, 0.12);
+      content: "";
+      filter: blur(95px);
+      pointer-events: none;
+      animation: ambient-drift 16s ease-in-out infinite alternate;
+    }
+
+    @keyframes ambient-drift {
+      to { transform: translate(90px, 100px) scale(1.25); }
+    }
+
+    main {
+      width: min(100%, 1080px);
+      margin: 0 auto;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 25px;
+      color: #d6caff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 12px;
+      background: linear-gradient(145deg, #d2a6ff, #8b5cf6 55%, #4f46e5);
+      color: #fff;
+      font-size: 1rem;
+      letter-spacing: 0;
+      box-shadow: 0 0 28px rgba(139, 92, 246, 0.4), inset 0 1px rgba(255,255,255,.35);
+      animation: mark-glow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes mark-glow {
+      to { box-shadow: 0 0 38px rgba(139, 92, 246, 0.62), inset 0 1px rgba(255,255,255,.45); }
+    }
+
+    .hero {
+      max-width: 720px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.065em;
+      line-height: 1.04;
+      text-wrap: balance;
+    }
+
+    h1 span {
+      color: transparent;
+      background: linear-gradient(100deg, #e5d8ff 0%, #b694ff 43%, #76e8f1 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      filter: drop-shadow(0 5px 24px rgba(167, 139, 250, 0.19));
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: 14px 0 0;
+      font-size: 1.04rem;
+    }
+
+    .notice, .panel {
+      border: 1px solid rgba(161, 174, 205, 0.15);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(26, 30, 45, 0.94), rgba(16, 19, 29, 0.91));
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.22), inset 0 1px rgba(255, 255, 255, 0.035);
+      backdrop-filter: blur(16px);
+    }
+
+    .notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0 0 22px;
+      padding: 15px 17px;
+      border-color: rgba(245, 190, 90, 0.18);
+      background: linear-gradient(100deg, rgba(82, 58, 24, 0.35), rgba(35, 29, 24, 0.44));
+      color: #f5d79b;
+      font-size: 0.91rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 35px rgba(0, 0, 0, 0.12), inset 3px 0 rgba(255, 205, 115, 0.55);
+    }
+
+    .notice-icon { font-size: 1.1rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .panel {
+      position: relative;
+      min-width: 0;
+      padding: 22px;
+      overflow: hidden;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .panel::before {
+      position: absolute;
+      top: 0;
+      left: 22px;
+      width: 68px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(193, 169, 255, 0.75), transparent);
+      content: "";
+    }
+
+    .panel:hover {
+      transform: translateY(-2px);
+      border-color: rgba(167, 139, 250, 0.29);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.27), 0 0 32px rgba(139, 92, 246, 0.055);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 17px;
+    }
+
+    .step {
+      display: grid;
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(167, 139, 250, 0.24);
+      border-radius: 11px;
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.24), rgba(103, 232, 249, 0.06));
+      color: #d6caff;
+      font-size: 0.84rem;
+      font-weight: 800;
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 5px 20px rgba(139, 92, 246, 0.08);
+    }
+
+    h2 { margin: 0; font-size: 1.06rem; letter-spacing: -0.02em; }
+    .section-heading p { margin: 4px 0 0; font-size: 0.86rem; }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      color: #dce2f0;
+      font-size: 0.88rem;
+      font-weight: 650;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid rgba(161, 174, 205, 0.2);
+      border-radius: 10px;
+      background: #111521;
+      color: inherit;
+      font: inherit;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 210px;
+      resize: vertical;
+      padding: 14px;
+      border: 1px solid rgba(161, 174, 205, 0.18);
+      border-radius: 11px;
+      background: linear-gradient(145deg, #0d1019, #111522);
+      color: #e3e7f1;
+      font: 0.95rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    textarea::placeholder { color: #68738a; }
+    textarea:focus, select:focus, input:focus {
+      border-color: rgba(167, 139, 250, 0.75);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14), 0 0 26px rgba(139, 92, 246, 0.1);
+      outline: none;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.84rem;
+    }
+
+    input[type="file"]::file-selector-button {
+      margin-right: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #252a3a;
+      color: #e9e5f7;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button:focus-visible, input[type="file"]:focus-visible {
+      outline: 3px solid #c4b5fd;
+      outline-offset: 2px;
+    }
+
+    .hint { margin: 8px 0 0; color: #8792a8; font-size: 0.83rem; }
+    .file-hint { margin-top: 9px; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 11px;
+      margin: 16px 0 0;
+    }
+
+    button {
+      min-height: 43px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(110deg, #d5b8ff 0%, #a78bfa 45%, #72dce8 130%);
+      color: #171126;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(139, 92, 246, 0.19), inset 0 1px rgba(255, 255, 255, 0.4);
+      transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(139, 92, 246, 0.3), inset 0 1px rgba(255, 255, 255, 0.45);
+    }
+    button.secondary {
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, #252a3b, #1b1f2c);
+      color: #e6e9f1;
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+    }
+    button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+    .generator {
+      margin-top: 18px;
+      border-color: rgba(167, 139, 250, 0.28);
+      background:
+        radial-gradient(ellipse at 95% 0%, rgba(103, 232, 249, 0.095), transparent 42%),
+        linear-gradient(145deg, rgba(43, 33, 69, 0.89), rgba(19, 22, 34, 0.96) 62%);
+      box-shadow: 0 22px 65px rgba(42, 23, 83, 0.15), inset 0 1px rgba(218, 201, 255, 0.08);
+    }
+
+    .accounts-panel { margin-top: 16px; }
+    textarea.owned-input { min-height: 105px; }
+    .accounts-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .accounts-footer .hint { max-width: 570px; margin: 0; }
+    .accounts-footer button { flex: 0 0 auto; }
+    .owned-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .owned-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px 9px 13px;
+      border: 1px solid rgba(161, 174, 205, 0.1);
+      border-radius: 11px;
+      background: rgba(10, 13, 21, 0.58);
+    }
+    .owned-name {
+      overflow-wrap: anywhere;
+      color: #e3def2;
+      font: 0.9rem ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .owned-row .row-actions { flex: 0 0 auto; }
+
+    .generator-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .generator .section-heading { margin-bottom: 0; }
+    .generator-copy { max-width: 670px; }
+    .generator-copy p { margin: 7px 0 0; font-size: 0.89rem; }
+
+    .sparkle {
+      display: grid;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(196, 181, 253, 0.32);
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(167, 139, 250, 0.25), rgba(103, 232, 249, 0.12));
+      color: #e6dbff;
+      font-size: 1.2rem;
+      box-shadow: 0 0 25px rgba(167, 139, 250, 0.14), inset 0 1px rgba(255,255,255,.12);
+      animation: sparkle-float 3.5s ease-in-out infinite;
+    }
+
+    @keyframes sparkle-float {
+      50% { transform: translateY(-4px) rotate(7deg); }
+    }
+
+    .generator-options {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) repeat(3, minmax(130px, 0.7fr));
+      align-items: end;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .generator-options label { margin-top: 0; }
+    .generator-options .actions { grid-column: 1 / -1; margin: 0; }
+
+    #message {
+      min-height: 1.5em;
+      margin: 20px 0 10px;
+      color: #b8c1d3;
+      font-size: 0.91rem;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 12px 0 14px;
+    }
+
+    .badge {
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(161, 174, 205, 0.08);
+      background: linear-gradient(135deg, #252b3e, #1b2030);
+      color: #d3daea;
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    .badge.taken {
+      border-color: rgba(255, 143, 163, 0.16);
+      background: rgba(170, 66, 82, 0.19);
+      color: #ffabb7;
+    }
+    .badge.available {
+      border-color: rgba(143, 224, 181, 0.15);
+      background: rgba(52, 138, 98, 0.17);
+      color: #a7e5c3;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid rgba(161, 174, 205, 0.15);
+      border-radius: 16px;
+      background: rgba(13, 16, 25, 0.82);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.17);
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid rgba(161, 174, 205, 0.1); }
+    th {
+      background: linear-gradient(90deg, rgba(167, 139, 250, 0.075), rgba(103, 232, 249, 0.025));
+      color: #8f9ab0;
+      font-size: 0.77rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    td { font-size: 0.9rem; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: rgba(167, 139, 250, 0.035); }
+    .status-taken { color: #ffabb7; font-weight: 700; }
+    .status-available { color: #a7e5c3; font-weight: 700; }
+    .status-taken::before, .status-available::before {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 9px;
+      border-radius: 50%;
+      content: "";
+      vertical-align: 1px;
+    }
+    .status-taken::before { background: #fb7185; box-shadow: 0 0 10px rgba(251, 113, 133, 0.55); }
+    .status-available::before { background: #6ee7b7; box-shadow: 0 0 10px rgba(110, 231, 183, 0.45); }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .row-actions button {
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      font-size: 0.78rem;
+    }
+    .row-actions .copy-name { border-color: rgba(103, 232, 249, 0.17); }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .pagination button { padding: 8px 12px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 28px 14px 50px; }
+      .grid { grid-template-columns: 1fr; }
+      .generator-options { grid-template-columns: 1fr 1fr; }
+      .generator-options .actions { grid-column: 1 / -1; }
+      .generator-options button { width: 100%; }
+      .accounts-footer { align-items: stretch; flex-direction: column; }
+      .accounts-footer button { width: 100%; }
+    }
+
+    @media (max-width: 440px) {
+      .panel { padding: 17px; }
+      .generator-top { gap: 10px; }
+      .sparkle { width: 36px; height: 36px; flex-basis: 36px; }
+      .generator-options { grid-template-columns: 1fr; gap: 4px; }
+      .generator-options .actions { grid-column: auto; margin-top: 10px; }
+      .actions button { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topline"><span class="brand-mark" aria-hidden="true">✦</span> Handle lab</div>
+    <header class="hero">
+      <h1>Find your next <span>handle.</span></h1>
+      <p>Generate short name ideas and compare them against your own list. Simple, private, and running right here in your browser.</p>
+    </header>
+    <div class="notice">
+      <span class="notice-icon" aria-hidden="true">ⓘ</span>
+      <span><strong>Local list only.</strong> This page does not check live Discord or Roblox accounts. Names not in your list have unknown availability.</span>
+    </div>
+
+    <div class="grid">
+      <section class="panel" aria-labelledby="candidates-heading">
+        <div class="section-heading">
+          <span class="step" aria-hidden="true">01</span>
+          <div><h2 id="candidates-heading">Candidate names</h2><p>Your ideas to compare</p></div>
+        </div>
+        <label for="candidates">Name list</label>
+        <textarea id="candidates">zyra
+vorn
+kyro
+nive
+xilo
+aery
+orix
+zuno
+nyvex
+zorin
+kaelo
+vyrn
+xelio
+orvyn
+lyrix
+zephy
+vaeli
+nyro
+zyven
+qorin
+velix
+maev
+zarek
+elori</textarea>
+        <p class="hint">Separate names with new lines or commas. Duplicate names are checked once.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="taken-heading">
+        <div class="section-heading">
+          <span class="step" aria-hidden="true">02</span>
+          <div><h2 id="taken-heading">Your taken-name list</h2><p>Used for local comparison</p></div>
+        </div>
+        <label for="taken">Paste or edit names</label>
+        <textarea id="taken" placeholder="already_used&#10;another_name"></textarea>
+        <p class="hint">Matches ignore capitalization and surrounding spaces.</p>
+        <label for="taken-file">Import a list</label>
+        <input id="taken-file" type="file" accept=".txt,.csv,text/plain,text/csv">
+        <p class="hint file-hint">Choose a .txt or .csv file. Your list is saved in this browser when supported.</p>
+      </section>
+    </div>
+
+    <section class="panel accounts-panel" aria-labelledby="owned-heading">
+      <div class="section-heading">
+        <span class="step" aria-hidden="true">03</span>
+        <div><h2 id="owned-heading">Accounts you own</h2><p>Keep your own usernames separate, then move them into your taken-name list.</p></div>
+      </div>
+      <label for="owned-accounts">Your account usernames</label>
+      <textarea id="owned-accounts" class="owned-input" placeholder="your_account_one&#10;your_account_two"></textarea>
+      <div class="accounts-footer">
+        <p class="hint">One username per line or comma-separated. Moving adds them to your local taken-name list and clears this box.</p>
+        <button id="move-owned" type="button">Move names to taken list</button>
+      </div>
+      <div id="owned-list" class="owned-list" aria-label="Account usernames and actions"></div>
+    </section>
+
+    <section class="panel generator" aria-labelledby="generator-heading">
+      <div class="generator-top">
+        <div class="section-heading">
+          <span class="step" aria-hidden="true">04</span>
+          <div class="generator-copy">
+            <h2 id="generator-heading">Generate short ideas</h2>
+            <p>Choose a length range from 2–7 characters, generate pronounceable-style names, and compare them with your saved list.</p>
+          </div>
+        </div>
+        <span class="sparkle" aria-hidden="true">✧</span>
+      </div>
+      <div class="generator-options">
+        <div>
+          <label for="platform">Username format</label>
+          <select id="platform">
+            <option value="roblox">Roblox-style (3–7 characters)</option>
+            <option value="discord">Discord-style (2–7 characters)</option>
+          </select>
+        </div>
+        <div>
+          <label for="amount">How many ideas? (1–100,000)</label>
+          <input id="amount" type="number" min="1" max="100000" value="100000">
+        </div>
+        <div>
+          <label for="min-length">Minimum length</label>
+          <select id="min-length">
+            <option value="2">2 characters</option>
+            <option value="3">3 characters</option>
+            <option value="4">4 characters</option>
+            <option value="5" selected>5 characters</option>
+            <option value="6">6 characters</option>
+            <option value="7">7 characters</option>
+          </select>
+        </div>
+        <div>
+          <label for="max-length">Maximum length</label>
+          <select id="max-length">
+            <option value="2">2 characters</option>
+            <option value="3">3 characters</option>
+            <option value="4">4 characters</option>
+            <option value="5">5 characters</option>
+            <option value="6">6 characters</option>
+            <option value="7" selected>7 characters</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="generate" type="button">✦ &nbsp;Generate another batch</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="check" type="button">Compare names</button>
+      <button id="download" class="secondary" type="button" disabled>Download CSV</button>
+      <button id="clear" class="secondary" type="button">Clear all</button>
+    </div>
+
+    <p id="message" role="status" aria-live="polite">Enter names in both lists, then choose “Check names.”</p>
+    <div id="summary" class="summary" aria-live="polite"></div>
+    <div id="results"></div>
+  </main>
+
+  <script>
+    const candidatesInput = document.getElementById("candidates");
+    const takenInput = document.getElementById("taken");
+    const ownedAccountsInput = document.getElementById("owned-accounts");
+    const ownedList = document.getElementById("owned-list");
+    const message = document.getElementById("message");
+    const summary = document.getElementById("summary");
+    const results = document.getElementById("results");
+    const downloadButton = document.getElementById("download");
+    const amountInput = document.getElementById("amount");
+    const takenFileInput = document.getElementById("taken-file");
+    const minLengthInput = document.getElementById("min-length");
+    const maxLengthInput = document.getElementById("max-length");
+    const pageSize = 200;
+    const savedListKey = "username-checker-taken-list";
+    const ownedListKey = "username-checker-owned-list";
+    let lastResults = [];
+    let currentPage = 0;
+
+    function saveTakenList() {
+      try {
+        localStorage.setItem(savedListKey, takenInput.value);
+      } catch (error) {
+        message.textContent = `Could not save the list in this browser: ${error.message}`;
+      }
+    }
+
+    function renderOwnedList() {
+      ownedList.replaceChildren();
+      for (const name of parseNames(ownedAccountsInput.value)) {
+        const row = document.createElement("div");
+        row.className = "owned-row";
+        const label = document.createElement("span");
+        label.className = "owned-name";
+        label.textContent = name;
+        row.appendChild(label);
+
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        const copyButton = document.createElement("button");
+        copyButton.className = "secondary copy-name";
+        copyButton.type = "button";
+        copyButton.textContent = "Copy";
+        copyButton.setAttribute("aria-label", `Copy ${name}`);
+        copyButton.addEventListener("click", () => copyName(name));
+        actions.appendChild(copyButton);
+
+        const moveButton = document.createElement("button");
+        moveButton.className = "secondary";
+        moveButton.type = "button";
+        moveButton.textContent = "Move to taken";
+        moveButton.setAttribute("aria-label", `Move ${name} to taken list`);
+        moveButton.addEventListener("click", () => moveOwnedName(name));
+        actions.appendChild(moveButton);
+        row.appendChild(actions);
+        ownedList.appendChild(row);
+      }
+    }
+
+    try {
+      const savedList = localStorage.getItem(savedListKey);
+      if (savedList !== null) takenInput.value = savedList;
+      const savedOwnedList = localStorage.getItem(ownedListKey);
+      if (savedOwnedList !== null) ownedAccountsInput.value = savedOwnedList;
+    } catch (error) {
+      message.textContent = `Browser storage is unavailable; paste or load the list each time. (${error.message})`;
+    }
+    renderOwnedList();
+
+    takenInput.addEventListener("input", saveTakenList);
+    ownedAccountsInput.addEventListener("input", () => {
+      renderOwnedList();
+      try {
+        localStorage.setItem(ownedListKey, ownedAccountsInput.value);
+      } catch (error) {
+        message.textContent = `Could not save your owned-account list: ${error.message}`;
+      }
+    });
+
+    takenFileInput.addEventListener("change", async () => {
+      const file = takenFileInput.files && takenFileInput.files[0];
+      if (!file) return;
+      try {
+        takenInput.value = await file.text();
+        saveTakenList();
+        message.textContent = `Loaded ${parseNames(takenInput.value).length} names from ${file.name}. Generate or check names to compare against this list.`;
+      } catch (error) {
+        message.textContent = `Could not read ${file.name}: ${error.message}`;
+      } finally {
+        takenFileInput.value = "";
+      }
+    });
+
+    function parseNames(value) {
+      const seen = new Set();
+      return value
+        .split(/[\r\n,]+/)
+        .map(name => name.trim())
+        .filter(name => {
+          if (!name) return false;
+          const key = name.toLocaleLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function makeCell(text, className) {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      if (className) cell.className = className;
+      return cell;
+    }
+
+    function render(items) {
+      summary.replaceChildren();
+      results.replaceChildren();
+
+      const takenCount = items.filter(item => item.taken).length;
+      const availableCount = items.length - takenCount;
+      [
+        [`${items.length} checked`, ""],
+        [`${takenCount} in your taken list`, "taken"],
+        [`${availableCount} not listed (availability unknown)`, "available"]
+      ].forEach(([text, kind]) => {
+        const badge = document.createElement("span");
+        badge.className = `badge ${kind}`.trim();
+        badge.textContent = text;
+        summary.appendChild(badge);
+      });
+
+      if (items.length === 0) {
+        results.textContent = "No candidate names to check.";
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-wrap";
+      const table = document.createElement("table");
+      const head = document.createElement("thead");
+      const heading = document.createElement("tr");
+      ["Username", "Result", "Actions"].forEach(text => {
+        const cell = document.createElement("th");
+        cell.scope = "col";
+        cell.textContent = text;
+        heading.appendChild(cell);
+      });
+      head.appendChild(heading);
+      table.appendChild(head);
+
+      const body = document.createElement("tbody");
+      const pageCount = Math.ceil(items.length / pageSize);
+      const pageItems = items.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      pageItems.forEach(item => {
+        const row = document.createElement("tr");
+        row.appendChild(makeCell(item.name));
+        row.appendChild(makeCell(
+          item.taken ? "In your taken list" : "Not listed — availability unknown",
+          item.taken ? "status-taken" : "status-available"
+        ));
+        const actionCell = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+
+        const copyButton = document.createElement("button");
+        copyButton.className = "secondary copy-name";
+        copyButton.type = "button";
+        copyButton.textContent = "Copy";
+        copyButton.setAttribute("aria-label", `Copy ${item.name}`);
+        copyButton.addEventListener("click", () => copyName(item.name));
+        actions.appendChild(copyButton);
+
+        const markButton = document.createElement("button");
+        markButton.className = "secondary";
+        markButton.type = "button";
+        markButton.textContent = item.taken ? "In taken list" : "Move to taken";
+        markButton.disabled = item.taken;
+        markButton.setAttribute("aria-label", `${item.taken ? "Already in" : "Move to"} your taken list: ${item.name}`);
+        markButton.addEventListener("click", () => moveCandidateToTaken(item));
+        actions.appendChild(markButton);
+
+        const ownedButton = document.createElement("button");
+        ownedButton.className = "secondary";
+        ownedButton.type = "button";
+        ownedButton.textContent = "Move to my accounts";
+        ownedButton.setAttribute("aria-label", `Move ${item.name} to accounts you own`);
+        ownedButton.addEventListener("click", () => moveCandidateToOwned(item));
+        actions.appendChild(ownedButton);
+
+        actionCell.appendChild(actions);
+        row.appendChild(actionCell);
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      wrapper.appendChild(table);
+      results.appendChild(wrapper);
+
+      if (pageCount > 1) {
+        const navigation = document.createElement("div");
+        navigation.className = "pagination";
+        const previous = document.createElement("button");
+        previous.className = "secondary";
+        previous.type = "button";
+        previous.textContent = "Previous";
+        previous.disabled = currentPage === 0;
+        previous.addEventListener("click", () => {
+          currentPage--;
+          render(items);
+        });
+        const pageLabel = document.createElement("span");
+        pageLabel.textContent = `Page ${currentPage + 1} of ${pageCount}`;
+        const next = document.createElement("button");
+        next.className = "secondary";
+        next.type = "button";
+        next.textContent = "Next";
+        next.disabled = currentPage >= pageCount - 1;
+        next.addEventListener("click", () => {
+          currentPage++;
+          render(items);
+        });
+        navigation.append(previous, pageLabel, next);
+        results.appendChild(navigation);
+      }
+    }
+
+    function removeCandidate(name) {
+      candidatesInput.value = parseNames(candidatesInput.value)
+        .filter(candidate => candidate.toLocaleLowerCase() !== name.toLocaleLowerCase())
+        .join("\n");
+    }
+
+    function moveCandidateToTaken(item) {
+      const names = parseNames(`${takenInput.value}\n${item.name}`);
+      takenInput.value = names.join("\n");
+      removeCandidate(item.name);
+      try {
+        localStorage.setItem(savedListKey, takenInput.value);
+        checkCandidates();
+        message.textContent = `"${item.name}" moved from candidates to your saved taken-name list. This is a local note, not a platform availability check.`;
+      } catch (error) {
+        checkCandidates();
+        message.textContent = `"${item.name}" moved on screen, but the taken-name list could not be saved: ${error.message}`;
+      }
+    }
+
+    function moveCandidateToOwned(item) {
+      const names = parseNames(`${ownedAccountsInput.value}\n${item.name}`);
+      ownedAccountsInput.value = names.join("\n");
+      removeCandidate(item.name);
+      renderOwnedList();
+      try {
+        localStorage.setItem(ownedListKey, ownedAccountsInput.value);
+        checkCandidates();
+        message.textContent = `"${item.name}" moved from candidates to Accounts you own.`;
+      } catch (error) {
+        checkCandidates();
+        message.textContent = `"${item.name}" moved on screen, but Accounts you own could not be saved: ${error.message}`;
+      }
+    }
+
+    function moveOwnedName(name) {
+      const remainingNames = parseNames(ownedAccountsInput.value)
+        .filter(ownedName => ownedName.toLocaleLowerCase() !== name.toLocaleLowerCase());
+      const takenNames = parseNames(`${takenInput.value}\n${name}`);
+      takenInput.value = takenNames.join("\n");
+      ownedAccountsInput.value = remainingNames.join("\n");
+      saveTakenList();
+      try {
+        localStorage.setItem(ownedListKey, ownedAccountsInput.value);
+      } catch (error) {
+        message.textContent = `Moved "${name}" on screen, but could not save the owned-account list: ${error.message}`;
+      }
+      renderOwnedList();
+      checkCandidates();
+      message.textContent = `"${name}" moved to your taken list. This is a local note, not a platform availability check.`;
+    }
+
+    async function copyName(name) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(name);
+        } else {
+          const helper = document.createElement("textarea");
+          helper.value = name;
+          helper.setAttribute("readonly", "");
+          helper.style.position = "fixed";
+          helper.style.opacity = "0";
+          document.body.appendChild(helper);
+          helper.select();
+          const copied = document.execCommand("copy");
+          helper.remove();
+          if (!copied) throw new Error("Clipboard access was denied by the browser.");
+        }
+        message.textContent = `Copied "${name}" to the clipboard.`;
+      } catch (error) {
+        message.textContent = `Could not copy "${name}": ${error.message}`;
+      }
+    }
+
+    function checkCandidates() {
+      const candidates = parseNames(candidatesInput.value);
+      const takenNames = new Set(parseNames(takenInput.value).map(name => name.toLocaleLowerCase()));
+
+      lastResults = candidates.map(name => ({
+        name,
+        taken: takenNames.has(name.toLocaleLowerCase())
+      }));
+      currentPage = 0;
+      render(lastResults);
+      message.textContent = lastResults.length
+        ? "These results only compare with your list. Names not listed have unknown Roblox/Discord availability."
+        : "Paste at least one candidate name to check.";
+      downloadButton.disabled = lastResults.length === 0;
+    }
+
+    document.getElementById("move-owned").addEventListener("click", () => {
+      const ownedNames = parseNames(ownedAccountsInput.value);
+      if (ownedNames.length === 0) {
+        message.textContent = "Add at least one username to your accounts-you-own list first.";
+        ownedAccountsInput.focus();
+        return;
+      }
+
+      const mergedNames = parseNames(`${takenInput.value}\n${ownedNames.join("\n")}`);
+      const addedCount = mergedNames.length - parseNames(takenInput.value).length;
+      takenInput.value = mergedNames.join("\n");
+      ownedAccountsInput.value = "";
+      renderOwnedList();
+
+      let storageError = "";
+      try {
+        localStorage.setItem(savedListKey, takenInput.value);
+        localStorage.setItem(ownedListKey, "");
+      } catch (error) {
+        storageError = error.message;
+      }
+
+      checkCandidates();
+      message.textContent = storageError
+        ? `Names moved on screen, but browser storage failed: ${storageError}`
+        : `Moved ${ownedNames.length} name${ownedNames.length === 1 ? "" : "s"} into your taken list (${addedCount} newly added; duplicates skipped).`;
+    });
+
+    function generateIdeas(amount, platform, requestedMinLength, requestedMaxLength) {
+      const onsets = [
+        "b", "bl", "br", "c", "ch", "cl", "cr", "d", "dr", "f", "fl", "fr",
+        "g", "gl", "gr", "h", "j", "k", "kh", "kl", "kr", "l", "m", "n",
+        "p", "ph", "pl", "pr", "q", "qu", "r", "s", "sc", "sh", "sk", "sl",
+        "sm", "sn", "sp", "st", "sw", "t", "th", "tr", "v", "vr", "w", "wh",
+        "x", "y", "z", "zh"
+      ];
+      const vowels = [
+        "a", "e", "i", "o", "u", "y", "ae", "ai", "ao", "au", "ea", "ee",
+        "ei", "eo", "ia", "ie", "io", "oa", "oe", "oi", "oo", "ou", "ui", "uy"
+      ];
+      const codas = [
+        "", "b", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t",
+        "v", "x", "z", "ch", "ck", "ll", "nd", "ng", "nk", "rd", "rk",
+        "rn", "sh", "st", "th"
+      ];
+      const platformMinLength = platform === "roblox" ? 3 : 2;
+      const minLength = Math.max(requestedMinLength, platformMinLength);
+      const maxLength = requestedMaxLength;
+      const separators = platform === "roblox" ? ["", "_"] : ["", "_", "."];
+      const ideas = new Set();
+
+      function shuffle(items) {
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+        return items;
+      }
+
+      const syllables = [];
+      for (const onset of onsets) {
+        for (const vowel of vowels) {
+          for (const coda of codas) {
+            const syllable = `${onset}${vowel}${coda}`;
+            if (syllable.length >= 2 && syllable.length <= 4) syllables.push(syllable);
+          }
+        }
+      }
+      const shuffledSyllables = shuffle(syllables);
+      const shuffledSeparators = shuffle([...separators]);
+      for (const syllable of shuffledSyllables) {
+        if (syllable.length >= minLength && syllable.length <= maxLength) {
+          ideas.add(syllable);
+          if (ideas.size >= amount) break;
+        }
+      }
+
+      for (const left of shuffledSyllables) {
+        if (ideas.size >= amount) break;
+        for (const right of shuffledSyllables) {
+          if (ideas.size >= amount) break;
+          for (const separator of shuffledSeparators) {
+            const name = `${left}${separator}${right}`;
+            if (name.length >= minLength && name.length <= maxLength) {
+              ideas.add(name);
+              if (ideas.size >= amount) break;
+            }
+          }
+          if (ideas.size >= amount) break;
+        }
+        if (ideas.size >= amount) break;
+      }
+
+      return shuffle([...ideas]);
+    }
+
+    document.getElementById("check").addEventListener("click", checkCandidates);
+
+    function generateAndCheck() {
+      const amount = Number(amountInput.value);
+      if (!Number.isInteger(amount) || amount < 1 || amount > 100000) {
+        message.textContent = "Choose a whole number from 1 to 100,000.";
+        amountInput.focus();
+        return;
+      }
+
+      const minLength = Number(minLengthInput.value);
+      const maxLength = Number(maxLengthInput.value);
+      if (minLength > maxLength) {
+        message.textContent = "Minimum length must be no greater than maximum length.";
+        minLengthInput.focus();
+        return;
+      }
+
+      const platform = document.getElementById("platform").value;
+      const platformMinLength = platform === "roblox" ? 3 : 2;
+      if (maxLength < platformMinLength) {
+        message.textContent = `The selected platform requires names of at least ${platformMinLength} characters.`;
+        maxLengthInput.focus();
+        return;
+      }
+
+      const ideas = generateIdeas(amount, platform, minLength, maxLength);
+      candidatesInput.value = ideas.join("\n");
+      checkCandidates();
+      message.textContent = `${ideas.length} name ideas (${minLength}–${maxLength} characters) generated and compared with your local list. Unlisted names have unknown Roblox/Discord availability.`;
+    }
+
+    document.getElementById("generate").addEventListener("click", generateAndCheck);
+    generateAndCheck();
+
+    document.getElementById("clear").addEventListener("click", () => {
+      candidatesInput.value = "";
+      takenInput.value = "";
+      ownedAccountsInput.value = "";
+      saveTakenList();
+      let ownedStorageError = "";
+      try {
+        localStorage.setItem(ownedListKey, "");
+      } catch (error) {
+        ownedStorageError = error.message;
+      }
+      lastResults = [];
+      currentPage = 0;
+      summary.replaceChildren();
+      results.replaceChildren();
+      message.textContent = ownedStorageError
+        ? `Lists cleared on screen, but the saved owned-account list could not be cleared: ${ownedStorageError}`
+        : "Enter names in both lists, then choose “Check names.”";
+      downloadButton.disabled = true;
+      candidatesInput.focus();
+    });
+
+    downloadButton.addEventListener("click", () => {
+      const escapeCsv = value => `"${value.replace(/"/g, '""')}"`;
+      const rows = [
+        ["Username", "Result"],
+        ...lastResults.map(item => [
+          item.name,
+          item.taken ? "In your taken list" : "Not listed — availability unknown"
+        ])
+      ];
+      const csv = rows.map(row => row.map(escapeCsv).join(",")).join("\r\n");
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      link.download = "username-check-results.csv";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    });
+  </script>
+</body>
+</html>
